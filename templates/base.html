@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BlissBox - DIY Recipe Ingredient Boxes{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    
+    <!-- Your Existing CSS Files -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
+    <link rel="stylesheet" href="{% static 'css/productpage.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Navigation Navbar (Reusing your existing classes) -->
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="{% url 'recipes:home' %}" class="navbar-brand">
+      <img src="{% static 'images/blissbox-logo.svg' %}" alt="BlissBox" />
+    </a>
+  </div>
+
+  <div class="nav-center">
+    <form method="GET" action="{% url 'recipes:search' %}" class="search-form">
+      <input type="text" name="q" placeholder="Search recipes..." />
+      <button type="submit"><i class="fas fa-search"></i></button>
+    </form>
+  </div>
+
+  <div class="nav-right">
+    <button class="hamburger" onclick="toggleMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</nav>
+
+
+
+    
+    <!-- Mobile Menu Overlay (Your overlay class) -->
+    <div id="mobileMenu" class="overlay">
+        <a href="javascript:void(0)" class="closebtn" onclick="toggleMenu()">&times;</a>
+        <div class="overlay-content">
+            <a href="{% url 'recipes:home' %}">Home</a>
+            <a href="{% url 'recipes:category' slug='desserts' %}">Desserts</a>
+            <a href="{% url 'recipes:category' slug='breakfast' %}">Breakfast</a>
+            <a href="{% url 'cart:view' %}">Cart</a>
+            
+            {% if user.is_authenticated %}
+                <a href="{% url 'users:dashboard' %}">Dashboard</a>
+                <a href="{% url 'users:pantry' %}">My Pantry</a>
+                <a href="{% url 'users:orders' %}">Orders</a>
+                <a href="{% url 'users:logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'users:login' %}">Sign In</a>
+                <a href="{% url 'users:register' %}">Register</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Messages/Alerts -->
+    {% if messages %}
+    <div class="container" style="margin-top: 20px;">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Main Content Block -->
+    {% block content %}{% endblock %}
+    
+    <!-- Footer (Reusing your email-box class) -->
+    <footer class="footer">
+        <div class="contact-details">
+            <h3 style="color: rgb(174, 48, 48); font-weight: bold;">Get Recipe Updates!</h3>
+            <p>Subscribe to our newsletter for new recipes and exclusive offers.</p>
+            
+            <!-- Email Subscription (Your existing email-box styling) -->
+            <div class="email-box">
+                <form method="POST" action="{% url 'recipes:subscribe' %}">
+                    {% csrf_token %}
+                    <input type="email" 
+                           id="email-input" 
+                           name="email" 
+                           placeholder="Enter your email" 
+                           required>
+                    <button type="submit" style="background-color: rgb(174, 48, 48); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer;">
+                        Subscribe
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Social Icons -->
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+        
+        <p style="margin-top: 30px; color: gray;">
+            © 2025 BlissBox. All rights reserved. | 
+            <a href="#" style="color: rgb(174, 48, 48); text-decoration: none;">Privacy Policy</a> | 
+            <a href="#" style="color: rgb(174, 48, 48); text-decoration: none;">Terms of Service</a>
+        </p>
+    </footer>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% load static %}
+    <script src="{% static 'js/menu.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

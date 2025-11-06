@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Order History - BlissBox{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Order History</h1>
+    
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Account Navigation</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="{% url 'users:dashboard' %}" class="text-decoration-none">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'users:pantry' %}" class="text-decoration-none">
+                                <i class="fas fa-box me-2"></i>My Pantry
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'users:orders' %}" class="text-decoration-none">
+                                <i class="fas fa-history me-2"></i>Order History
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'users:logout' %}" class="text-decoration-none">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Your Orders</h5>
+                    
+                    {% if orders.count > 0 %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Date</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                        <tr>
+                                            <td>#{{ order.id|default:"0000" }}</td>
+                                            <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                            <td>₹{{ order.total_amount|default:"0.00" }}</td>
+                                            <td>
+                                                <span class="badge bg-success">{{ order.status|default:"Completed" }}</span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">View Details</button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-history fa-5x text-muted mb-3"></i>
+                            <h5>No orders yet</h5>
+                            <p class="text-muted">Start shopping to see your order history here!</p>
+                            <a href="{% url 'recipes:home' %}" class="btn btn-primary">Browse Recipes</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

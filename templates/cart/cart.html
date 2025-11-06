@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart - BlissBox{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Shopping Cart</h1>
+    
+    {% if cart.items.count > 0 %}
+        <div class="row">
+            <div class="col-md-8">
+                <div class="cart-items">
+                    {% for item in cart.items.all %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-3">
+                                        {% if item.recipe.featured_image %}
+                                            <img src="{{ item.recipe.featured_image.url }}" alt="{{ item.recipe.name }}" class="img-fluid rounded">
+                                        {% else %}
+                                            <div class="bg-light text-center py-4 rounded">
+                                                <i class="fas fa-utensils fa-3x text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-5">
+                                        <h5>{{ item.recipe.name }}</h5>
+                                        <p class="text-muted">Servings: {{ item.servings }}</p>
+                                        {% if item.excluded_ingredients.count > 0 %}
+                                            <p class="text-muted">Excluded: {{ item.excluded_ingredients.all|join:", " }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-2">
+                                        <form method="post" action="{% url 'cart:update' item.id %}">
+                                            {% csrf_token %}
+                                            <div class="input-group">
+                                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary">Update</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        <p class="mb-1"><strong>₹{{ item.customized_price }}</strong></p>
+                                        <form method="post" action="{% url 'cart:remove' item.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Order Summary</h5>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <span>Subtotal:</span>
+                            <span>₹{{ cart.total_price }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Shipping:</span>
+                            <span>Free</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Total:</strong>
+                            <strong>₹{{ cart.total_price }}</strong>
+                        </div>
+                        <hr>
+                        <a href="{% url 'cart:checkout' %}" class="btn btn-primary w-100">Proceed to Checkout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
+            <h3>Your cart is empty</h3>
+            <p class="text-muted">Start adding some delicious recipes!</p>
+            <a href="{% url 'recipes:home' %}" class="btn btn-primary">Browse Recipes</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

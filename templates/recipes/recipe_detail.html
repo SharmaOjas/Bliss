@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ recipe.name }} - BlissBox{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ingredient-list {
+        background-color: rgb(247, 238, 238);
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .ingredient-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .ingredient-item:last-child {
+        border-bottom: none;
+    }
+    
+    .ingredient-checkbox {
+        margin-right: 15px;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: rgb(174, 48, 48);
+    }
+    
+    .ingredient-name {
+        flex: 1;
+        color: gray;
+        font-weight: 500;
+    }
+    
+    .ingredient-quantity {
+        color: rgb(174, 48, 48);
+        font-weight: bold;
+        margin-right: 20px;
+        min-width: 80px;
+    }
+    
+    .price-breakdown {
+        background-color: white;
+        border: 2px solid rgb(174, 48, 48);
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        color: gray;
+    }
+    
+    .price-row.total {
+        border-top: 2px solid rgb(174, 48, 48);
+        padding-top: 15px;
+        font-weight: bold;
+        color: rgb(174, 48, 48);
+        font-size: 18px;
+    }
+    
+    .price-row.strike {
+        text-decoration: line-through;
+        color: #999;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Recipe Header Section -->
+<div style="display: flex; gap: 30px; padding: 30px; background-color: rgb(251, 218, 218);">
+    
+    <!-- Recipe Image -->
+    <div style="flex: 1; min-width: 300px;">
+        {% if recipe.featured_image %}
+        <img src="{{ recipe.featured_image.url }}" 
+             alt="{{ recipe.name }}" 
+             style="width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        {% else %}
+        <div style="width: 100%; height: 400px; background-color: rgb(247, 238, 238); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+            <span style="color: gray; font-size: 18px;">Recipe Image Unavailable</span>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Recipe Information -->
+    <div style="flex: 1;">
+        <h1 style="color: rgb(174, 48, 48); margin-bottom: 15px;">{{ recipe.name }}</h1>
+        
+        <p style="color: gray; font-size: 16px; line-height: 1.6;">{{ recipe.description }}</p>
+        
+        <!-- Recipe Meta Information -->
+        <div style="margin: 20px 0; padding: 15px; background-color: white; border-radius: 8px;">
+            <p><strong style="color: rgb(174, 48, 48);">⏱️ Time:</strong> 
+               <span style="color: gray;">{{ recipe.prep_time_minutes }} min prep + {{ recipe.cook_time_minutes }} min cook</span>
+            </p>
+            <p><strong style="color: rgb(174, 48, 48);">🎯 Difficulty:</strong> 
+               <span style="color: gray; text-transform: capitalize;">{{ recipe.get_difficulty_display }}</span>
+            </p>
+            <p><strong style="color: rgb(174, 48, 48);">🍽️ Default Servings:</strong> 
+               <span style="color: gray;">{{ recipe.default_servings }}</span>
+            </p>
+            
+            {% if recipe.dietary_tags.all %}
+            <p><strong style="color: rgb(174, 48, 48);">🌱 Dietary:</strong>
+                {% for tag in recipe.dietary_tags.all %}
+                <span style="background-color: rgb(247, 238, 238); color: rgb(174, 48, 48); padding: 4px 10px; border-radius: 20px; margin: 0 5px; display: inline-block;">
+                    {{ tag.get_name_display }}
+                </span>
+                {% endfor %}
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; padding: 30px; max-width: 1200px; margin: 0 auto;">
+    
+    <!-- Ingredients Section -->
+    <div>
+        <h2 style="color: rgb(174, 48, 48); margin-bottom: 20px;">📦 Ingredients for {{ recipe.default_servings }} Servings</h2>
+        
+        <!-- Servings Selector -->
+        <div style="background-color: white; border: 2px solid rgb(174, 48, 48); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+            <label style="color: rgb(174, 48, 48); font-weight: bold;">Adjust Servings:</label>
+            <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                <button onclick="decreaseServings()" 
+                        style="background-color: white; border: 2px solid rgb(174, 48, 48); color: rgb(174, 48, 48); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    −
+                </button>
+                <input type="number" 
+                       id="servings-input" 
+                       value="{{ recipe.default_servings }}" 
+                       min="{{ recipe.min_servings }}" 
+                       max="{{ recipe.max_servings }}"
+                       onchange="updatePrice()"
+                       style="width: 60px; text-align: center; border: 1px solid #ddd; padding: 8px; border-radius: 5px;">
+                <button onclick="increaseServings()" 
+                        style="background-color: white; border: 2px solid rgb(174, 48, 48); color: rgb(174, 48, 48); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    +
+                </button>
+            </div>
+        </div>
+        
+        <!-- Ingredients List (YOUR EXISTING CLASS!) -->
+        <!-- Replace the ingredients section in your template with this -->
+<div class="ingredient-list">
+    <h3 style="color: rgb(174, 48, 48); margin-bottom: 15px;">Check items you already own:</h3>
+    
+    <!-- Remove the separate form - put checkboxes directly in the main form -->
+    {% for recipe_ingredient in recipe.ingredients.all %}
+    <div class="ingredient-item">
+        <input type="checkbox" 
+               class="ingredient-checkbox" 
+               name="excluded_ingredients" 
+               value="{{ recipe_ingredient.id }}"
+               data-price="{{ recipe_ingredient.get_price_for_servings|floatformat:2 }}"
+               onchange="updatePrice()">
+        <span class="ingredient-name">
+            {{ recipe_ingredient.ingredient.name }}
+            {% if recipe_ingredient.is_optional %}
+            <span style="color: #999; font-size: 12px;">(Optional)</span>
+            {% endif %}
+        </span>
+        <span class="ingredient-quantity">
+            {{ recipe_ingredient.quantity|floatformat:2 }} {{ recipe_ingredient.ingredient.get_unit_display }}
+        </span>
+        <span style="color: green; font-weight: bold;">
+            - ₹{{ recipe_ingredient.get_price_for_servings|floatformat:2 }}
+        </span>
+    </div>
+    {% endfor %}
+</div>
+
+        
+        <!-- Nutritional Information -->
+        <div style="background-color: rgb(247, 238, 238); border-radius: 10px; padding: 20px;">
+            <h3 style="color: rgb(174, 48, 48); margin-bottom: 15px;">Nutritional Info (per serving)</h3>
+            {% with nutrition=recipe.get_nutritional_info %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <p style="color: gray;"><strong>Calories:</strong> {{ nutrition.calories }} kcal</p>
+                    <p style="color: gray;"><strong>Protein:</strong> {{ nutrition.protein_g|floatformat:1 }}g</p>
+                </div>
+                <div>
+                    <p style="color: gray;"><strong>Fat:</strong> {{ nutrition.fat_g|floatformat:1 }}g</p>
+                    <p style="color: gray;"><strong>Carbs:</strong> {{ nutrition.carbs_g|floatformat:1 }}g</p>
+                </div>
+            </div>
+            {% endwith %}
+        </div>
+    </div>
+    
+    <!-- Price & Cart Section (Sticky Sidebar) -->
+    <div>
+        <!-- Price Breakdown Card -->
+        <div class="price-breakdown">
+            <h3 style="color: rgb(174, 48, 48); margin-bottom: 20px;">💳 Price Summary</h3>
+            
+            <div class="price-row">
+                <span>Base Price ({{ recipe.default_servings }} srv):</span>
+                <span class="price-row strike">₹<span id="original-price">{{ recipe.base_price }}</span></span>
+            </div>
+            
+            <div class="price-row" id="excluded-savings" style="display: none;">
+                <span style="color: green;">✓ Items You Have:</span>
+                <span style="color: green;">- ₹<span id="excluded-savings-amount">0</span></span>
+            </div>
+            
+            <div class="price-row" id="servings-adjustment" style="display: none;">
+                <span>Servings Adjustment:</span>
+                <span id="servings-adjustment-amount">×1.0</span>
+            </div>
+            
+            <div class="price-row total">
+                <span>Your Price:</span>
+                <span>₹<span id="final-price">{{ recipe.base_price }}</span></span>
+            </div>
+            
+            <p style="color: #999; font-size: 12px; margin-top: 15px; text-align: center;">
+                💚 Save money by excluding items you already have!
+            </p>
+        </div>
+        
+        <!-- Add to Cart Form -->
+        <form method="POST" action="{% url 'cart:add' recipe.id %}" style="margin-top: 20px;">
+            {% csrf_token %}
+            
+            <!-- Quantity Selector -->
+            <div style="margin-bottom: 15px;">
+                <label style="color: rgb(174, 48, 48); font-weight: bold;">Quantity:</label>
+                <input type="number" 
+                       name="quantity" 
+                       value="1" 
+                       min="1" 
+                       max="10"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-top: 5px;">
+            </div>
+            
+            <!-- Hidden Fields for Excluded Ingredients -->
+            <input type="hidden" id="excluded-ingredients-field" name="excluded_ingredients" value="">
+            
+            <!-- Hidden Field for Servings -->
+            <input type="hidden" id="servings-field" name="servings" value="{{ recipe.default_servings }}">
+            
+            <!-- Add to Cart Button -->
+            <button type="submit" 
+                    style="width: 100%; background-color: rgb(174, 48, 48); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                🛒 Add to Cart
+            </button>
+            
+            <button type="button" 
+                    onclick="saveLater()"
+                    style="width: 100%; background-color: white; color: rgb(174, 48, 48); border: 2px solid rgb(174, 48, 48); padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s;">
+                ❤️ Save for Later
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Instructions Section -->
+<div style="background-color: rgb(247, 238, 238); padding: 40px; margin-top: 40px;">
+    <div style="max-width: 1000px; margin: 0 auto;">
+        <h2 style="color: rgb(174, 48, 48); margin-bottom: 20px;">👨‍🍳 Instructions</h2>
+        <div style="color: gray; line-height: 1.8; white-space: pre-line;">{{ recipe.instructions }}</div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Pass Django URL to JavaScript
+    window.RECIPES_CALCULATE_PRICE_URL = "{% url 'recipes:calculate-price' %}";
+</script>
+<script src="{% static 'js/customization.js' %}"></script>
+{% endblock %}

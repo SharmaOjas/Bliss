@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}My Pantry - BlissBox{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>My Pantry</h1>
+    
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Account Navigation</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="{% url 'users:dashboard' %}" class="text-decoration-none">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'users:pantry' %}" class="text-decoration-none">
+                                <i class="fas fa-box me-2"></i>My Pantry
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'users:orders' %}" class="text-decoration-none">
+                                <i class="fas fa-history me-2"></i>Order History
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'users:logout' %}" class="text-decoration-none">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Pantry Items</h5>
+                    
+                    {% if pantry_items.count > 0 %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Quantity</th>
+                                        <th>Unit</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in pantry_items %}
+                                        <tr>
+                                            <td>{{ item.ingredient.name }}</td>
+                                            <td>{{ item.quantity }}</td>
+                                            <td>{{ item.ingredient.unit }}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-danger">Remove</button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-box fa-5x text-muted mb-3"></i>
+                            <h5>Your pantry is empty</h5>
+                            <p class="text-muted">Start adding ingredients to track what you have at home!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Add Pantry Item</h5>
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="ingredient" class="form-label">Ingredient</label>
+                                <select name="ingredient" id="ingredient" class="form-select">
+                                    <option value="">Select an ingredient...</option>
+                                    {% for ingredient in all_ingredients %}
+                                        <option value="{{ ingredient.id }}">{{ ingredient.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="quantity" class="form-label">Quantity</label>
+                                <input type="number" name="quantity" id="quantity" class="form-control" min="0" step="0.1">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary w-100">Add Item</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
