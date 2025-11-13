@@ -164,7 +164,9 @@
                class="ingredient-checkbox" 
                name="excluded_ingredients" 
                value="{{ recipe_ingredient.id }}"
-               data-price="{{ recipe_ingredient.get_price_for_servings|floatformat:2 }}"
+               data-quantity="{{ recipe_ingredient.quantity|floatformat:3 }}"
+               data-ppu="{{ recipe_ingredient.ingredient.base_price_per_unit|floatformat:3 }}"
+               data-unit="{{ recipe_ingredient.ingredient.get_unit_display }}"
                onchange="updatePrice()">
         <span class="ingredient-name">
             {{ recipe_ingredient.ingredient.name }}
@@ -175,8 +177,8 @@
         <span class="ingredient-quantity">
             {{ recipe_ingredient.quantity|floatformat:2 }} {{ recipe_ingredient.ingredient.get_unit_display }}
         </span>
-        <span style="color: green; font-weight: bold;">
-            - ₹{{ recipe_ingredient.get_price_for_servings|floatformat:2 }}
+        <span class="ingredient-price" style="color: green; font-weight: bold;">
+            - ₹{{ recipe_ingredient.get_price_for_default_servings|floatformat:2 }}
         </span>
     </div>
     {% endfor %}
@@ -209,7 +211,7 @@
             
             <div class="price-row">
                 <span>Base Price ({{ recipe.default_servings }} srv):</span>
-                <span class="price-row strike">₹<span id="original-price">{{ recipe.base_price }}</span></span>
+                <span class="price-row strike">₹<span id="original-price">{{ recipe.get_total_cost_for_default_servings|floatformat:2 }}</span></span>
             </div>
             
             <div class="price-row" id="excluded-savings" style="display: none;">
@@ -224,7 +226,7 @@
             
             <div class="price-row total">
                 <span>Your Price:</span>
-                <span>₹<span id="final-price">{{ recipe.base_price }}</span></span>
+                <span>₹<span id="final-price">{{ recipe.get_total_cost_for_default_servings|floatformat:2 }}</span></span>
             </div>
             
             <p style="color: #999; font-size: 12px; margin-top: 15px; text-align: center;">
@@ -235,6 +237,15 @@
         <!-- Add to Cart Form -->
         <form method="POST" action="{% url 'cart:add' recipe.id %}" style="margin-top: 20px;">
             {% csrf_token %}
+
+            <!-- Hidden recipe meta for JS (use dashed data-* names) -->
+            <input type="hidden"
+                   name="recipe"
+                   value="{{ recipe.slug }}"
+                   data-min-servings="{{ recipe.min_servings }}"
+                   data-max-servings="{{ recipe.max_servings }}"
+                   data-default-servings="{{ recipe.default_servings }}"
+                   data-base-price="{{ recipe.get_total_cost_for_default_servings|floatformat:2 }}">
             
             <!-- Quantity Selector -->
             <div style="margin-bottom: 15px;">
@@ -247,8 +258,8 @@
                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-top: 5px;">
             </div>
             
-            <!-- Hidden Fields for Excluded Ingredients -->
-            <input type="hidden" id="excluded-ingredients-field" name="excluded_ingredients" value="">
+            <!-- Hidden Inputs for Excluded Ingredients (one per ID) -->
+            <div id="excluded-inputs-container"></div>
             
             <!-- Hidden Field for Servings -->
             <input type="hidden" id="servings-field" name="servings" value="{{ recipe.default_servings }}">

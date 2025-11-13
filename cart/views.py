@@ -53,34 +53,31 @@ class AddToCartView(LoginRequiredMixin, View):
                     # Save basic fields before M2M operations
                     item.save(update_fields=['quantity', 'servings'])
                 
-                # Step 2: NOW handle excluded ingredients (after item has an ID)
-                if excluded_ingredient_ids:
-                    # Make sure item is saved before manipulating M2M
-                    if not item.pk:
-                        item.save()
-                    
-                    # Clear existing exclusions first (now safe after save)
-                    item.excluded_ingredients.clear()
-                    
-                    # Add new exclusions (only valid numeric IDs)
-                    added_count = 0
-                    for ingredient_id in excluded_ingredient_ids:
-                        try:
-                            recipe_ingredient = RecipeIngredient.objects.get(id=ingredient_id)
-                            # Verify it belongs to this recipe
-                            if recipe_ingredient.recipe == recipe:
-                                item.excluded_ingredients.add(recipe_ingredient)
-                                added_count += 1
-                        except RecipeIngredient.DoesNotExist:
-                            # Ignore invalid ingredient IDs
-                            continue
-                    
-                    if added_count > 0:
-                        messages.info(request, f'{added_count} ingredients excluded from {recipe.name}.')
+                # Step 2: Handle excluded ingredients consistently (after item has an ID)
+                # Always clear existing exclusions so unchecking boxes is respected
+                if not item.pk:
+                    item.save()
+                item.excluded_ingredients.clear()
+
+                # Add new exclusions if any (only valid numeric IDs)
+                added_count = 0
+                for ingredient_id in excluded_ingredient_ids:
+                    try:
+                        recipe_ingredient = RecipeIngredient.objects.get(id=ingredient_id)
+                        # Verify it belongs to this recipe
+                        if recipe_ingredient.recipe == recipe:
+                            item.excluded_ingredients.add(recipe_ingredient)
+                            added_count += 1
+                    except RecipeIngredient.DoesNotExist:
+                        # Ignore invalid ingredient IDs
+                        continue
+
+                if added_count > 0:
+                    messages.info(request, f'{added_count} ingredients excluded from {recipe.name}.')
                 
                 # Step 3: Recalculate price after exclusions (now safe after M2M)
                 item.calculate_customized_price()
-                item.save(update_fields=['customized_price'])
+                item.save(update_fields=['customized_price', 'original_price'])
             
             # Success messages
             if created:
@@ -124,25 +121,24 @@ class UpdateCartItemView(LoginRequiredMixin, View):
             item.servings = servings
             item.save(update_fields=['quantity', 'servings'])
             
-            # Handle excluded ingredients
-            if excluded_ingredient_ids:
-                item.excluded_ingredients.clear()
-                added_count = 0
-                for ingredient_id in excluded_ingredient_ids:
-                    try:
-                        recipe_ingredient = RecipeIngredient.objects.get(id=ingredient_id)
-                        if recipe_ingredient.recipe == item.recipe:
-                            item.excluded_ingredients.add(recipe_ingredient)
-                            added_count += 1
-                    except RecipeIngredient.DoesNotExist:
-                        continue
-                
-                if added_count > 0:
-                    messages.info(request, f'Updated {added_count} exclusions for {item.recipe.name}.')
+            # Handle excluded ingredients: always clear, then re-add any provided
+            item.excluded_ingredients.clear()
+            added_count = 0
+            for ingredient_id in excluded_ingredient_ids:
+                try:
+                    recipe_ingredient = RecipeIngredient.objects.get(id=ingredient_id)
+                    if recipe_ingredient.recipe == item.recipe:
+                        item.excluded_ingredients.add(recipe_ingredient)
+                        added_count += 1
+                except RecipeIngredient.DoesNotExist:
+                    continue
+
+            if added_count > 0:
+                messages.info(request, f'Updated {added_count} exclusions for {item.recipe.name}.')
             
             # Recalculate price
             item.calculate_customized_price()
-            item.save(update_fields=['customized_price'])
+            item.save(update_fields=['customized_price', 'original_price'])
             
             if quantity > 0:
                 messages.info(request, f'{item.recipe.name} updated.')

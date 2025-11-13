@@ -77,10 +77,8 @@ class CartItem(models.Model):
             self.customized_price = Decimal('0.00')
             return self.customized_price
         
-        # Calculate base price for current servings
-        default_servings = self.recipe.default_servings or 1
-        servings_multiplier = Decimal(self.servings) / Decimal(default_servings)
-        base_price = self.recipe.base_price * servings_multiplier
+        # Calculate base price as sum of ingredient costs for current servings
+        base_price = self.recipe.get_total_cost_for_servings(self.servings)
         
         # Calculate excluded ingredients cost (only if item is saved and has M2M)
         excluded_cost = Decimal('0')
@@ -94,6 +92,8 @@ class CartItem(models.Model):
         
         # Final customized price (minimum 0.01 to avoid zero price issues)
         self.customized_price = max(base_price - excluded_cost, Decimal('0.01'))
+        # Keep original_price in sync with the full ingredient total for transparency
+        self.original_price = base_price
         return self.customized_price
 
     def save(self, *args, **kwargs):

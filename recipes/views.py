@@ -97,19 +97,25 @@ class CalculatePriceView(View):
             # Get the recipe
             recipe = get_object_or_404(Recipe, slug=recipe_slug, is_published=True)
             
-            # Calculate base price for servings
-            base_price = recipe.base_price * (Decimal(servings) / Decimal(recipe.default_servings))
+            # Calculate base price as sum of ingredient costs for servings
+            base_price = recipe.get_total_cost_for_servings(servings)
             
             # Calculate savings from excluded ingredients
             savings = Decimal('0.00')
             if excluded_ingredients:
                 for ingredient_id in excluded_ingredients:
+                    # Accept either RecipeIngredient.id or Ingredient.id
                     try:
+                        # First try Ingredient.id path
                         recipe_ingredient = recipe.ingredients.get(ingredient_id=ingredient_id)
-                        ingredient_price = recipe_ingredient.get_price_for_servings(servings)
-                        savings += ingredient_price
                     except recipe.ingredients.model.DoesNotExist:
-                        continue
+                        try:
+                            # Fallback: RecipeIngredient.id
+                            recipe_ingredient = recipe.ingredients.get(id=ingredient_id)
+                        except recipe.ingredients.model.DoesNotExist:
+                            continue
+                    ingredient_price = recipe_ingredient.get_price_for_servings(servings)
+                    savings += ingredient_price
             
             # Calculate final price
             final_price = base_price - savings

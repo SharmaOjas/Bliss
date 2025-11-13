@@ -108,6 +108,17 @@ class Recipe(models.Model):
     
     def __str__(self):
         return self.name
+
+    def get_total_cost_for_servings(self, servings):
+        """Sum of all ingredient costs for the given servings."""
+        total = Decimal('0.00')
+        for ri in self.ingredients.all():
+            total += ri.get_price_for_servings(servings)
+        return total
+
+    def get_total_cost_for_default_servings(self):
+        """Sum of ingredient costs for the recipe's default servings."""
+        return self.get_total_cost_for_servings(self.default_servings or 1)
     
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -184,3 +195,7 @@ class RecipeIngredient(models.Model):
         multiplier = Decimal(servings) / Decimal(self.recipe.default_servings)
         adjusted_quantity = self.quantity * multiplier
         return self.ingredient.base_price_per_unit * adjusted_quantity
+
+    def get_price_for_default_servings(self):
+        """Convenience for templates: price for the recipe default servings."""
+        return self.get_price_for_servings(self.recipe.default_servings or 1)

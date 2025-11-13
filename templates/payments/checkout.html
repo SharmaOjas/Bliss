@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Checkout - BlissBox{% endblock %}
+
+{% block extra_css %}
+<style>
+  .bb-title { color: rgb(174,48,48); font-weight: 700; }
+  .btn-bb { background-color: rgb(174,48,48); color: #fff; border: none; }
+  .btn-bb:hover { background-color: #922424; color: #fff; }
+  .bb-border { border: 2px solid rgb(174,48,48); border-radius: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top:50px;">
+  <div class="bb-border p-4">
+    <h2 class="bb-title">Proceed to Payment</h2>
+    <p style="font-size:18px;">Total Amount: ₹{{ total|floatformat:2 }}</p>
+
+    <button id="pay-btn" class="btn-bb px-4 py-2 rounded">
+      Pay with Razorpay
+    </button>
+  </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  var options = {
+      "key": "{{ key }}",
+      "amount": "{{ payment.amount }}",
+      "currency": "INR",
+      "name": "BlissBox",
+      "description": "Test Transaction",
+      "order_id": "{{ payment.id }}",
+      "handler": function (response){
+          alert("✅ Payment Successful!\nPayment ID: " + response.razorpay_payment_id);
+      },
+      "theme": {"color": "#AE3030"}
+  };
+  var rzp = new Razorpay(options);
+  document.getElementById('pay-btn').onclick = function(e){
+      rzp.open();
+      e.preventDefault();
+  }
+</script>
+{% endblock %}
