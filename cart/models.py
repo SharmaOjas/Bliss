@@ -167,6 +167,10 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.order_number}"
 
+    @property
+    def total_amount(self):
+        return self.total
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(

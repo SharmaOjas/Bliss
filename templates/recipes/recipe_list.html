@@ -131,12 +131,25 @@
 
     /* Recipe Cards Grid */
     .recipe-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 35px;
+        /* Turn grid into a flex track to enable sliding */
+        display: flex;
+        gap: 48px;
+        flex-direction: row;
+        flex-wrap: nowrap; /* force horizontal layout */
+        align-items: stretch;
+        min-width: max-content; /* track grows to fit all cards horizontally */
+        justify-content: flex-start;
         max-width: 1300px;
         margin: 0 auto;
         padding: 0 20px;
+        transition: transform 0.5s ease-in-out;
+    }
+
+    /* Slider wrapper to hide overflow, similar to homepage */
+    .recipe-slider {
+        overflow: hidden;
+        width: 100%;
+        padding: 12px 24px; /* breathing room around slider */
     }
 
     .recipe-card {
@@ -147,6 +160,17 @@
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         border: 2px solid transparent;
         position: relative;
+        /* Fixed basis so we slide card-by-card; adjust for 3-up layout */
+        flex: 0 0 calc(33.333% - 48px);
+        max-width: 380px;
+        transform-origin: center;
+    }
+
+    /* Active card scale similar to homepage .dessert-item.active */
+    .recipe-card.active {
+        transform: scale(1.08);
+        transition: transform 0.3s ease-in-out;
+        z-index: 2;
     }
 
     .recipe-card:hover {
@@ -225,7 +249,7 @@
     }
 
     .recipe-content {
-        padding: 25px;
+        padding: 32px; /* extra inner spacing for a relaxed look */
     }
 
     .recipe-title {
@@ -276,7 +300,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-top: 20px;
+        padding-top: 24px;
         border-top: 2px solid rgb(247, 238, 238);
     }
 
@@ -439,12 +463,34 @@
         }
 
         .recipe-grid {
-            grid-template-columns: 1fr;
-            gap: 25px;
+            gap: 24px;
         }
 
         .section-title {
             font-size: 2rem;
+        }
+    }
+
+    /* Flex-based slider responsive tweaks */
+    @media (max-width: 1024px) {
+        .recipe-card {
+            flex: 0 0 calc(50% - 48px);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .recipe-grid {
+            flex-wrap: nowrap;
+        }
+        .recipe-card {
+            flex: 0 0 85%; /* wide card but keep horizontal flow */
+            max-width: none;
+        }
+        .recipe-card.active {
+            transform: none; /* avoid tight feel on small screens */
+        }
+        .recipe-content {
+            padding: 24px;
         }
     }
 </style>
@@ -455,12 +501,12 @@
 <!-- Beautiful Hero Section -->
 <div class="hero-section">
     <div class="hero-content">
-        <h1 class="hero-title">BlissBox</h1>
-        <h3 class="hero-subtitle">DIY Recipe Ingredient Boxes</h3>
+        <h1 class="hero-title">BlissBox.</h1>
+        <h3 class="hero-subtitle">Happiness in a Box</h3>
         <p class="hero-description">
-            We seek to simplify and enhance the dessert making experience. BlissBox empowers you to 
-            effortlessly select your desired recipe, specify the servings you wish to prepare, 
-            and receive a meticulously curated DIY ingredient box.
+            We seek to simplify and enhance the dessert-making experience. BlissBox empowers you to effortlessly
+            select your desired dessert recipe, specify the servings you wish to prepare, and receive a meticulously
+            curated DIY ingredient box.
         </p>
         <a href="#recipes" class="cta-button">Explore Recipes</a>
     </div>
@@ -474,6 +520,7 @@
     </div>
 
     {% if recipes %}
+    <div class="recipe-slider">
     <div class="recipe-grid">
         {% for recipe in recipes %}
         <div class="recipe-card">
@@ -519,12 +566,13 @@
                         <span>{{ recipe.base_price }}</span>
                     </div>
                     <a href="{% url 'recipes:detail' slug=recipe.slug %}" class="view-details-btn">
-                        View Details →
+                        Read more
                     </a>
                 </div>
             </div>
         </div>
         {% endfor %}
+    </div>
     </div>
     {% else %}
     <div class="empty-state">
@@ -589,4 +637,43 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const track = document.querySelector('.recipe-grid');
+    if (!track) return;
+    const cards = track.querySelectorAll('.recipe-card');
+    if (!cards.length) return;
+
+    let currentIndex = 0;
+
+    function slideCards() {
+      cards.forEach(c => c.classList.remove('active'));
+      const active = cards[currentIndex];
+      if (active) {
+        active.classList.add('active');
+      }
+
+      const cardWidth = cards[0].getBoundingClientRect().width;
+      const gap = parseFloat(getComputedStyle(track).gap) || 0;
+      const offset = -currentIndex * (cardWidth + gap);
+      track.style.transform = `translateX(${offset}px)`;
+
+      currentIndex = (currentIndex + 1) % cards.length;
+    }
+
+    // Kick off slider similar cadence to homepage
+    slideCards();
+    setInterval(slideCards, 3000);
+
+    // Reset on resize to avoid misalignment
+    window.addEventListener('resize', () => {
+      track.style.transform = 'translateX(0px)';
+      currentIndex = 0;
+      cards.forEach(c => c.classList.remove('active'));
+    });
+  });
+</script>
 {% endblock %}

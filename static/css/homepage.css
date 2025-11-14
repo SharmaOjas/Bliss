@@ -4,6 +4,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 /* General Styles */
+:root {
+    --primary-color: #ae3030;
+    --secondary-color: #333333;
+    --accent-color: #c44545;
+    --color-surface: #ffffff;
+    --color-border: #e0e0e0;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --space-16: 16px;
+    --duration-normal: .3s;
+    --ease-standard: ease;
+}
+
 body {
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -96,13 +108,11 @@ body {
     padding: 10px 0;
 }
 
-.nav.navbar-nav a:hover {
-    color: #ae3030;
-}
+.nav.navbar-nav a:hover { color: var(--primary-color); }
 
 /* Authentication and Cart Elements from base.html */
 .sign-in-button, .dashboard-link, .logout-link, .register-link {
-    background: linear-gradient(45deg, #ae3030, #c44545);
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
     color: white !important;
     padding: 10px 24px;
     border-radius: 25px;
@@ -125,7 +135,7 @@ body {
 }
 
 .cart-badge {
-    background-color: #ae3030;
+    background-color: var(--primary-color);
     color: white;
     border-radius: 50%;
     padding: 2px 6px;
@@ -204,7 +214,7 @@ body {
 
 /* Footer (assuming it's in base.html or extended templates) */
 .footer {
-    background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #fef8f8 100%);
     color: white;
     padding: 60px 0 30px;
     text-align: center;
@@ -279,9 +289,7 @@ body {
     transition: color 0.3s;
 }
 
-.social-icons a:hover {
-    color: #ae3030;
-}
+.social-icons a:hover { color: var(--primary-color); }
 
 /* Responsive Design */
 @media screen and (max-width: 768px) {
@@ -376,7 +384,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
+  background: transparent;
   border-bottom: 1px solid #e0e0e0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   padding: 0 30px; /* small padding to keep content from touching edges */
@@ -421,13 +429,7 @@ body {
   color: #333;
 }
 
-.search-form button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.1rem;
-  color: #ae3030;
-}
+.search-form button { background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--primary-color); }
 
 /* --- Right: Hamburger --- */
 .nav-right {
@@ -482,4 +484,52 @@ body {
   .hamburger span {
     width: 22px;
   }
+}
+
+.footer {
+  /* background-color: #f8d7de; */
+  /* background-image: url('/static/images/auth-bg.jpg'); */
+  background-repeat: repeat;
+  background-size: 360px auto;
+  background-position: center;
+  color: #4b2b2b;
+}
+
+.contact-details h3 { font-weight: 700; }
+
+.email-box { max-width: 520px; margin: 24px auto; }
+.email-box form { display: flex; justify-content: center; gap: 12px; }
+.email-box input[type="email"] {
+  flex: 1;
+  min-width: 280px;
+  padding: 12px 16px;
+  border: 1.5px solid #eac6c9;
+  border-radius: 12px;
+  background: #fff;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+  box-sizing: border-box;
+}
+.email-box input[type="email"]:focus {
+  border-color: #ae3030;
+  box-shadow: 0 0 0 4px rgba(174, 48, 48, 0.1);
+}
+.email-box button {
+  background: linear-gradient(135deg, #ae3030 0%, #c44545 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(174, 48, 48, 0.25);
+}
+.email-box button:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(174, 48, 48, 0.35); }
+
+.social-icons a { color: #ae3030; transition: transform 0.2s ease, color 0.2s ease; }
+.social-icons a:hover { color: #c44545; transform: translateY(-2px); }
+
+@media screen and (max-width: 768px) {
+  .email-box form { flex-direction: column; align-items: center; }
 }

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ recipe.name }} - Product - BlissBox{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/productpage.css' %}">
+{% endblock %}
+
+{% block content %}
+<div style="max-width:1200px; margin: 40px auto;">
+    <div style="display:flex; gap:30px; align-items:flex-start;">
+        <div style="flex:1">
+            {% if recipe.featured_image %}
+            <img src="{{ recipe.featured_image.url }}" alt="{{ recipe.name }}" style="width:100%; border-radius:12px; object-fit:cover; max-height:500px;">
+            {% else %}
+            <div style="background:#f7eaea; height:400px; border-radius:12px; display:flex; align-items:center; justify-content:center;">🍰</div>
+            {% endif %}
+
+            <div style="margin-top:20px;">
+                <h2 style="color:#ae3030;">About this product</h2>
+                <p style="color:#666;">{{ recipe.description }}</p>
+                {% if recipe.instructions %}
+                <h4 style="color:#ae3030; margin-top:12px;">Instructions</h4>
+                <div style="background:#fff; padding:12px; border-radius:8px;">{{ recipe.instructions|linebreaks }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <aside style="width:360px;">
+            <div class="product-card" style="padding:20px;">
+                <div class="product-info">
+                    <div class="product-title">{{ recipe.name }}</div>
+                    <div class="product-price">₹{{ recipe.get_total_cost_for_default_servings|floatformat:2 }}</div>
+                    <p class="product-description">Ready-to-make ingredient box for {{ recipe.default_servings }} servings.</p>
+
+                    <form method="POST" action="{% url 'cart:add' recipe.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="recipe" value="{{ recipe.slug }}">
+                        <div style="margin-bottom:12px;">
+                            <label style="font-weight:600; color:#444;">Quantity</label>
+                            <input type="number" name="quantity" value="1" min="1" max="10" style="width:100%; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #eee;">
+                        </div>
+                        <button class="add-to-cart-btn" type="submit">Add to cart</button>
+                    </form>
+                </div>
+            </div>
+
+            <div style="margin-top:18px;" class="cart-summary">
+                <h4>Details</h4>
+                <p style="color:#666;">Servings: {{ recipe.default_servings }}</p>
+                <p style="color:#666;">Prep: {{ recipe.prep_time_minutes }}m • Cook: {{ recipe.cook_time_minutes }}m</p>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}
